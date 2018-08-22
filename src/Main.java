@@ -3,9 +3,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+
 public class Main {
     private final static int txyz = 3;
-    private final static int compressionresetTime = 2;
+    //private final static int compressionresetTime = 2;
     private final static float GRAVITY = 9.80665f;
     private final static float offsetBenchmark = 0.2f;
 
@@ -16,9 +17,12 @@ public class Main {
     public static void main(String[] args) {
 
 
-        String tmpFile = null;
+        String stationaryFile = null;
+        String compressionsFile = null;
+
         try {
-            tmpFile = readFile();
+            stationaryFile = readFile("src/offsetData.txt");
+            compressionsFile = readFile("src/data.txt");
         }
         catch (IOException e) {
             System.out.println(e);
@@ -26,24 +30,42 @@ public class Main {
 
         CalibrateData calibrate = new CalibrateData();
 
-        ArrayList<float[]> formattedData = calibrate.getData(tmpFile);
-        System.out.println(formattedData.size());
-        float[][] accelerometerData = formattedData.toArray(new float[][]
-        {new float[formattedData.size()]});
+        //createOffsetBenchAccelerationBenchmark();
 
-        //System.out.println(Arrays.toString(x[2668]));
+        // Offsetting for stationary data
+        ArrayList<float[]> formattedData = calibrate.getData(stationaryFile);
+
+        float[][] accelerometeroffsetData = formattedData.toArray(new float[][]
+                                                {new float[formattedData.size()]});
+
+        float[] oRawAcceleration = calibrate.getAccelerationFromRawData(accelerometeroffsetData, txyz);
+        float accelerationOffset = calibrate.offsetAcceleration(oRawAcceleration, offsetBenchmark, offsetFailedVal);
+        System.out.println(accelerationOffset);
+//////////////////////////////////////////////////////////
 
 
-        int[] timeArray  = calibrate.getTimearray(accelerometerData);
-        float[] acceleration = calibrate.getAcceleration(accelerometerData, txyz);
+        //Getting compressions info
+        formattedData = calibrate.getData(compressionsFile);
+
+        float[][] accelerometerCompressionData = formattedData.toArray(new float[][]
+                                                     {new float[formattedData.size()]});
+
+        float[] cRawAcceleration = calibrate.getAccelerationFromRawData(accelerometerCompressionData, txyz);
+        float[] acceleration = calibrate.setAcceleration(cRawAcceleration, accelerationOffset, GRAVITY);
 
 
+        int[] timeArray  = calibrate.getTimearray(accelerometerCompressionData);
+        float[] scaledTime = calibrate.scaleTime(accelerometerCompressionData);
 
+
+        System.out.println(Arrays.toString(scaledTime));
+        System.out.println(Arrays.toString(acceleration));
+        //System.out.println(accelerationOffset);
 
     }
 
-    static String readFile() throws IOException {
-        File file = new File("src/data.txt");
+    private static String readFile(String filename) throws IOException {
+        File file = new File(filename);
 
         BufferedReader br = new BufferedReader(
                 new InputStreamReader(
@@ -56,5 +78,9 @@ public class Main {
         }
 
         return tmp;
+    }
+
+    static void createOffsetBenchAccelerationBenchmark() {
+
     }
 }

@@ -1,7 +1,5 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class CalibrateData {
 
@@ -24,6 +22,7 @@ public class CalibrateData {
     float[] formatData(String string) {
         String[] strArrayData = string.split(",");
         float[] inputtedLine = new float[strArrayData.length];
+
 
         for (int i = 0; i < strArrayData.length; i++) {
             strArrayData[i] = strArrayData[i].trim();
@@ -48,19 +47,17 @@ public class CalibrateData {
         return timeArray;
     }
 
-    float[] getAcceleration (float[][] array2D, int txyz) {
-        float[] acceleration = new float[array2D.length];
+    float[] getAccelerationFromRawData (float[][] array2D, int txyz) {
+        float[] rawAcceleration = new float[array2D.length];
 
         int i = 0;
         for (float[] floater : array2D) {
-            acceleration[i] = floater[txyz];
-            System.out.println(Arrays.toString(floater));
-            System.out.println(acceleration[i]);
+            rawAcceleration[i] = floater[txyz];
             i++;
 
         }
 
-          return array2D[0];
+          return rawAcceleration;
     }
 
     float[] scaleTime(float[][] array2D) {
@@ -79,24 +76,33 @@ public class CalibrateData {
 
     }
 
-    float offsetAcceleration(float[] acceleration, float offsetBenchmark, float offsetFailedVal) {
+    float offsetAcceleration(float[] rawAcceleration, float offsetBenchmark, float offsetFailedVal) {
 
-        float maxValue = MathOps.getMaxValue(acceleration);
-        float minValue = MathOps.getMinValue(acceleration);
+        float maxValue = MathOps.getMaxValue(rawAcceleration);
+        float minValue = MathOps.getMinValue(rawAcceleration);
         float tmp = maxValue - minValue;
 
-        System.out.println(Arrays.toString(acceleration));
+        //System.out.println(Arrays.toString(rawAcceleration));
 
-        if (tmp > offsetVal) {
-            System.out.println(Arrays.toString(acceleration));
+        if (tmp > offsetBenchmark) {
+            //System.out.println(Arrays.toString(rawAcceleration));
             return offsetFailedVal;
         }
 
-        return MathOps.getMeanValue(acceleration);
+        return MathOps.getMeanValue(rawAcceleration);
     }
 
-    float setAcceleration(float offsetVal) {
+    float[] setAcceleration(float[] rawAcceleration, float offsetVal, float GRAVITY) {
 
+        float[] acceleration = new float[rawAcceleration.length];
+
+        int i = 0;
+        for (float floater : rawAcceleration) {
+            acceleration[i] = (rawAcceleration[i] - offsetVal)*GRAVITY;
+            i++;
+        }
+
+        return acceleration;
     }
 
 }

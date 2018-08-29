@@ -82,10 +82,8 @@ public class CalibrateData {
         float minValue = MathOps.getMinValue(rawAcceleration);
         float tmp = maxValue - minValue;
 
-        //System.out.println(Arrays.toString(rawAcceleration));
 
         if (tmp > offsetBenchmark) {
-            //System.out.println(Arrays.toString(rawAcceleration));
             return offsetFailedVal;
         }
 

@@ -1,7 +1,7 @@
 public class FastFourierTransform {
 
     // compute the FFT of x[], assuming its length is a power of 2
-    public static Complex[] fft(Complex[] x) {
+    public static Complex[] simpleFFT (Complex[] x) {
         int N = x.length;
 
         // base case
@@ -15,14 +15,14 @@ public class FastFourierTransform {
         for (int k = 0; k < N/2; k++) {
             even[k] = x[2*k];
         }
-        Complex[] q = fft(even);
+        Complex[] q = simpleFFT(even);
 
         // fft of odd terms
         Complex[] odd  = even;  // reuse the array
         for (int k = 0; k < N/2; k++) {
             odd[k] = x[2*k + 1];
         }
-        Complex[] r = fft(odd);
+        Complex[] r = simpleFFT(odd);
 
         // combine
         Complex[] y = new Complex[N];

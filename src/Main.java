@@ -17,13 +17,12 @@ public class Main {
 
     public static void main(String[] args) {
 
-
         String stationaryFile = null;
         String compressionsFile = null;
 
         try {
-            stationaryFile = readFile("src/offsetData.txt");
-            compressionsFile = readFile("src/data.txt");
+            stationaryFile = readFile("offsetData.txt");
+            compressionsFile = readFile("data.txt");
         }
         catch (IOException e) {
             System.out.println(e);
@@ -41,7 +40,7 @@ public class Main {
 
         float[] oRawAcceleration = calibrate.getAccelerationFromRawData(accelerometeroffsetData, txyz);
         float accelerationOffset = calibrate.offsetAcceleration(oRawAcceleration, offsetBenchmark, offsetFailedVal);
-       // System.out.println(accelerationOffset);
+        System.out.println(accelerationOffset);
 //_____________________________________________________________________________________________________________________________________
 
 
@@ -79,20 +78,20 @@ public class Main {
         double[] fftSmooth = new double[N/2];
 
 
-        //Smooths the complex FFT after getting Single
+        //mooths the complex FFT after getting Single
         for (int i = 0 ; i < (N/2) ; i++){
             fftPolarSingle[i] = complexArrayFFTValues[i+1].divides(new Complex(N, 0));
             fftSmooth[i] = fftPolarSingle[i].abs();
         }
 
-        //Scales THe array
+        // Scales THe array
         for (int i = 2 ; i < (N/2 - 1) ; i++) {
             fftPolarSingle[i] = fftPolarSingle[i].times(new Complex(2,0));
             fftSmooth[i] *= 2;
         }
 
 
-        //astFourierTransform.show(fftSmooth, "FFT smoothed");
+        // FastFourierTransform.show(fftSmooth, "FFT smoothed");
 
         double Fs = 1/scaledTime[1];
         double[] freqBins = MathOps.scaleFrequencyBins(N, Fs);
@@ -112,8 +111,11 @@ public class Main {
         System.out.println(depth);
         System.out.println(rate);
 
-
-
+//_____________________________________________________________________________________________________________________________________
+        double [] findPeaks = peakDetection(fftSmooth);
+        for (int i = 0; i < findPeaks.length; i++) {
+            System.out.println("Index " + i + " is: " + findPeaks[i]);
+        }
     }
 
     private static String readFile(String filename) throws IOException {
@@ -137,20 +139,20 @@ public class Main {
         File file = new File(fileName);
 
         FileOutputStream stream = new FileOutputStream(file);
-        //System.out.println(file);
+        // System.out.println(file);
 
-        //String str = new String(data.getBytes());
+        // String str = new String(data.getBytes());
 
         try {
             stream.write(data.getBytes());
-            //Log.d(TAG, "IMUWriteRawData: " + data.getBytes());
+            // Log.d(TAG, "IMUWriteRawData: " + data.getBytes());
         } finally {
             stream.close();
         }
 
     }
 
-    public double[] peakDetection(double[] fftSmooth) {
+    public static double[] peakDetection(double[] fftSmooth) {
 
         int min_dist = 2;
         int numPeaks = 0;
@@ -160,29 +162,48 @@ public class Main {
 
         double threshold = 0.3 * (max_val - min_val) + min_val;
 
-        int h = 1; // intervals between datapoints
+        int h = 1; // intervals between data points
 
+        double[] firstDerivative = new double[fftSmooth.length - 1];
+        double[] secondDerivative = new double[fftSmooth.length - 1];
+        int sizeDerviative = firstDerivative.length;
 
-        double[] derivative = new double[fftSmooth.length - 1];
-        int sizeDerivate = derivative.length;
-
-        ArrayList<Integer> zeroes = new ArrayList<>();
+        ArrayList<Integer> roots = new ArrayList<>();
 
         double[] peaks = new double[3];
 
-
+        int distBetweenPeaks = 0;
         // Take the derivative of the interval of values
-        for (int i = 0; i < sizeDerivate; i++) {
-            derivative[i] = (fftSmooth[i + h] - fftSmooth[i]) / h;
-            if (derivative[i] == 0) {
-                zeroes.add(i);
+        for (int i = 0; i < sizeDerviative; i++) {
+            firstDerivative[i] = (fftSmooth[i + h] - fftSmooth[i]) / h;
+            if (firstDerivative[i] == 0 && distBetweenPeaks < min_dist)
+            {
+                roots.add(i);
+                distBetweenPeaks = 0;
+            } else {
+                distBetweenPeaks ++;
             }
-
         }
 
-        if (zeroes.size() == 0)
+        // Take the second derivative of the interval of values
+        for (int i = 0; i < sizeDerviative; i++) {
+            secondDerivative[i] = (firstDerivative[i + h] - firstDerivative[i]) / h;
+        }
+
+        /* If the second derivative is negative at the indices stored in the 'root'
+         * array-list then we've found a peak in the positive direction */
+        for (int i = 0; i < roots.size(); i++)
+        {
+            if (secondDerivative[roots.get(i)] < 0)
+            {
+                peaks[numPeaks] = roots.get(i);
+                numPeaks ++;
+            }
+        }
+
+        if (roots.size() == 0)
             return new double[1];
 
-        return new double[1];
+        return peaks;
     }
 }

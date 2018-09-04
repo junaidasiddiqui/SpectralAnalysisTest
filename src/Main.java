@@ -176,23 +176,28 @@ public class Main {
         // Take the derivative of the interval of values
         for (int i = 0; i < sizeDerviative; i++) {
             firstDerivative[i] = (fftSmooth[i + h] - fftSmooth[i]) / h;
-            if (firstDerivative[i] == 0 && distBetweenPeaks < min_dist)
-            {
-                roots.add(i);
-                distBetweenPeaks = 0;
-            } else {
-                distBetweenPeaks ++;
+            if(i > 1) {
+                if (firstDerivative[i] > 0 && firstDerivative[i-1] < 0 && distBetweenPeaks > min_dist) {
+                    roots.add(i);
+                    distBetweenPeaks = 0;
+                } else if (firstDerivative[i] < 0 && firstDerivative[i-1] < 0 && distBetweenPeaks > min_dist){
+                    roots.add(i);
+                    distBetweenPeaks = 0;
+                } else {
+                    distBetweenPeaks ++;
+                }
             }
         }
 
         // Take the second derivative of the interval of values
-        for (int i = 0; i < sizeDerviative; i++) {
+        for (int i = 0; i < sizeDerviative - 1; i++) {
             secondDerivative[i] = (firstDerivative[i + h] - firstDerivative[i]) / h;
+            System.out.println(i);
         }
 
         /* If the second derivative is negative at the indices stored in the 'root'
          * array-list then we've found a peak in the positive direction */
-        for (int i = 0; i < roots.size(); i++)
+        for (int i = 0; i < roots.size() && numPeaks < 3; i++)
         {
             if (secondDerivative[roots.get(i)] < 0)
             {

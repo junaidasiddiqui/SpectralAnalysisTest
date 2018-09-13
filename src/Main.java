@@ -1,3 +1,4 @@
+import javax.sound.midi.SysexMessage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -11,8 +12,6 @@ public class Main {
     private final static float offsetBenchmark = 0.2f;
 
     private final static float offsetFailedVal = 100f;
-
-    private final static String fileName = "src/fftSmoothed.txt";
 
 
     public static void main(String[] args) {
@@ -57,7 +56,6 @@ public class Main {
         int[] timeArray  = calibrate.getTimearray(accelerometerCompressionData);
         float[] scaledTime = calibrate.scaleTime(accelerometerCompressionData);
 
-        StringBuilder tmpString = new StringBuilder();
         double hanningAppliedValues[] = MathOps.applyHanningWindow(acceleration, 2600);
 
         //System.out.println(Arrays.toString(hanningAppliedValues));
@@ -98,6 +96,9 @@ public class Main {
 
         int[] peaks = new int[] {102, 205};
 
+        System.out.println("First Peak " + fftSmooth[102]);
+        System.out.println("Second Peak " + fftSmooth[205]);
+
         // FastFourierTransform.show(fftPolarSingle, "FFT Polar Single");
 
         double[] amplitudes = MathOps.peaksFromTransform(fftSmooth, peaks);
@@ -133,24 +134,5 @@ public class Main {
 
         return tmp;
     }
-
-    public static void writeFile( String data) throws IOException {
-
-        File file = new File(fileName);
-
-        FileOutputStream stream = new FileOutputStream(file);
-        // System.out.println(file);
-
-        // String str = new String(data.getBytes());
-
-        try {
-            stream.write(data.getBytes());
-            // Log.d(TAG, "IMUWriteRawData: " + data.getBytes());
-        } finally {
-            stream.close();
-        }
-
-    }
-
 
 }

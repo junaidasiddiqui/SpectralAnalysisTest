@@ -103,7 +103,7 @@ public class MathOps {
         double max_val = MathOps.getMaxValue(fftSmooth);
         double min_val = MathOps.getMinValue(fftSmooth);
 
-        double threshold = 0.3 * (max_val - min_val) + min_val;
+        double threshold = 2 * (max_val - min_val) + min_val;
 
         int h = 1; // intervals between data points
 

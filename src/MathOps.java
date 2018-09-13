@@ -72,8 +72,6 @@ public class MathOps {
         }
 
         double coherentGain = getSumofArray(window) /  windowSize;
-        System.out.println(coherentGain);
-
 
         for (int i = 0; i < windowSize; i++) {
             hanningApplied[i] = acceleration[i] * window[i] / coherentGain;

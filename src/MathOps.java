@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MathOps {
@@ -93,6 +94,53 @@ public class MathOps {
     static double getfundamentalFrequency(int[] indexes, double[] freqBins) {
         return freqBins[indexes[0]];
     }
+
+    public static int[] peakDetection(double[] fftSmooth) {
+
+        int min_dist = 1;
+        int numPeaks = 0;
+
+        double max_val = MathOps.getMaxValue(fftSmooth);
+        double min_val = MathOps.getMinValue(fftSmooth);
+
+        double threshold = 0.3 * (max_val - min_val) + min_val;
+
+        int h = 1; // intervals between data points
+
+        ArrayList<Integer> roots = new ArrayList<>();
+
+        int[] peaks = new int[3];
+        int[] cyclical = new int[3];
+
+        int distBetweenPeaks = 2;
+        // Traverse all the values until 3 peaks which fulfill the criteria are
+        // found using a cyclical array.
+        for (int i = 0; i < fftSmooth.length || numPeaks < 3; i++) {
+            int temp = cyclical[1];
+            cyclical[1] = cyclical[2];
+            cyclical[0] = temp;
+            cyclical[2] = i;
+            if (cyclical[1] > cyclical[0] && cyclical[1] < cyclical[2]);
+            if (fftSmooth[cyclical[1]] > fftSmooth[cyclical[0]] + 0.1 && fftSmooth[cyclical[1]] > fftSmooth[cyclical[2]] + 0.1
+                    && distBetweenPeaks > min_dist) {
+                roots.add(cyclical[1]);
+                numPeaks++;
+                distBetweenPeaks = 0;
+            } else {
+                distBetweenPeaks++;
+            }
+        }
+
+        peaks[0] = roots.get(0);
+        peaks[1] = roots.get(1);
+        peaks[2] = roots.get(2);
+
+        if (roots.size() == 0)
+            return new int[1];
+
+        return peaks;
+    }
+
 
     static double[] phaseAngles(int[] indexes, Complex[] fftPolarSingle) {
         int len = indexes.length;

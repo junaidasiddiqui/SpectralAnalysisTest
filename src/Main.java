@@ -21,8 +21,8 @@ public class Main {
         String compressionsFile = null;
 
         try {
-            stationaryFile = readFile("offsetData.txt");
-            compressionsFile = readFile("data.txt");
+            stationaryFile = readFile("src/offsetData.txt");
+            compressionsFile = readFile("src/data.txt");
         }
         catch (IOException e) {
             System.out.println(e);
@@ -111,10 +111,10 @@ public class Main {
         System.out.println(depth);
         System.out.println(rate);
 
-//_____________________________________________________________________________________________________________________________________
-        double [] findPeaks = peakDetection2(fftSmooth);
+//____________________________________________PEAK DETECTION TEST_______________________________________________________
+        int [] findPeaks = MathOps.peakDetection(fftSmooth);
         for (int i = 0; i < findPeaks.length; i++) {
-            System.out.println("Index " + i + " is: " + (findPeaks[i] + 1));
+            System.out.println("Index " + i + " is: " + (findPeaks[i] + 1) + " with fftSmooth of: " + fftSmooth[findPeaks[i]]);
         }
     }
 
@@ -152,128 +152,5 @@ public class Main {
 
     }
 
-    public static double[] peakDetection(double[] fftSmooth) {
 
-        int min_dist = 1;
-        int numPeaks = 0;
-
-        double max_val = MathOps.getMaxValue(fftSmooth);
-        double min_val = MathOps.getMinValue(fftSmooth);
-
-        double threshold = 0.3 * (max_val - min_val) + min_val;
-
-        int h = 1; // intervals between data points
-
-        double[] firstDerivative = new double[fftSmooth.length - 1];
-        double[] secondDerivative = new double[fftSmooth.length - 1];
-        int sizeDerviative = firstDerivative.length;
-
-        ArrayList<Integer> roots = new ArrayList<>();
-
-        double[] peaks = new double[3];
-
-        int distBetweenPeaks = 0;
-        // Take the derivative of the interval of values
-        for (int i = 0; i < sizeDerviative; i++) {
-            firstDerivative[i] = (fftSmooth[i + h] - fftSmooth[i]) / h;
-        }
-
-        for (int i = 0; i < sizeDerviative-1; i++) {
-            if (firstDerivative[i] > 0 && firstDerivative[i+1] < 0
-                    || firstDerivative[i] < 0 && firstDerivative[i+1] > 0 && distBetweenPeaks > min_dist) {
-                if (fftSmooth[i] > fftSmooth[i+1])
-                    roots.add(i);
-                else {
-                    roots.add(i+1);
-                    i++;
-                }
-                distBetweenPeaks = 0;
-            } else {
-                distBetweenPeaks ++;
-            }
-        }
-
-        // Take the second derivative of the interval of values
-        for (int i = 0; i < sizeDerviative - 1; i++) {
-            secondDerivative[i] = (firstDerivative[i + h] - firstDerivative[i]) / h;
-            System.out.println(i);
-        }
-
-        /* If the second derivative is negative at the indices stored in the 'root'
-         * array-list then we've found a peak in the positive direction */
-        for (int i = 0; i < roots.size() && numPeaks < 3; i++)
-        {
-            if (secondDerivative[roots.get(i)] <= 0)
-            {
-                peaks[numPeaks] = roots.get(i);
-                numPeaks ++;
-            }
-        }
-
-        if (roots.size() == 0)
-            return new double[1];
-
-        return peaks;
-    }
-
-    public static double[] peakDetection2(double[] fftSmooth) {
-
-        int min_dist = 1;
-        int numPeaks = 0;
-
-        double max_val = MathOps.getMaxValue(fftSmooth);
-        double min_val = MathOps.getMinValue(fftSmooth);
-
-        double threshold = 0.3 * (max_val - min_val) + min_val;
-
-        int h = 1; // intervals between data points
-
-        double[] firstDerivative = new double[fftSmooth.length - 1];
-        double[] secondDerivative = new double[fftSmooth.length - 1];
-        int sizeDerviative = firstDerivative.length;
-
-        ArrayList<Integer> roots = new ArrayList<>();
-
-        double[] peaks = new double[3];
-        int[] cyclical = new int[3];
-
-        int distBetweenPeaks = 2;
-        // Take the derivative of the interval of values
-        for (int i = 0; i < fftSmooth.length; i++) {
-            int temp = cyclical[1];
-            cyclical[1] = cyclical[2];
-            cyclical[0] = temp;
-            cyclical[2] = i;
-            if (cyclical[1] > cyclical[0] && cyclical[1] < cyclical[2]);
-                if (fftSmooth[cyclical[1]] > fftSmooth[cyclical[0]] && fftSmooth[cyclical[1]] > fftSmooth[cyclical[2]] && distBetweenPeaks > min_dist) {
-                    roots.add(cyclical[1]);
-                    numPeaks++;
-                    distBetweenPeaks = 0;
-                } else {
-                    distBetweenPeaks++;
-                }
-        }
-
-        // // Take the second derivative of the interval of values
-        // for (int i = 0; i < sizeDerviative - 1; i++) {
-        //     secondDerivative[i] = (firstDerivative[i + h] - firstDerivative[i]) / h;
-        //     System.out.println(i);
-        // }
-
-        // /* If the second derivative is negative at the indices stored in the 'root'
-        //  * array-list then we've found a peak in the positive direction */
-        // for (int i = 0; i < roots.size() && numPeaks < 3; i++)
-        // {
-        //     if (secondDerivative[roots.get(i)] <= 0)
-        //     {
-        //         peaks[numPeaks] = roots.get(i);
-        //         numPeaks ++;
-        //     }
-        // }
-
-        if (roots.size() == 0)
-            return new double[1];
-
-        return peaks;
-    }
 }

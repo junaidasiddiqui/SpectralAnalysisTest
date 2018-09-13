@@ -97,43 +97,41 @@ public class MathOps {
 
     public static int[] peakDetection(double[] fftSmooth) {
 
-        int min_dist = 1;
+        int min_dist = 5;
         int numPeaks = 0;
 
-        double max_val = MathOps.getMaxValue(fftSmooth);
-        double min_val = MathOps.getMinValue(fftSmooth);
-
-        double threshold = 2 * (max_val - min_val) + min_val;
-
-        int h = 1; // intervals between data points
+//        double max_val = MathOps.getMaxValue(fftSmooth);
+//        double min_val = MathOps.getMinValue(fftSmooth);
+//
+//        double threshold = 2 * (max_val - min_val) + min_val;
 
         ArrayList<Integer> roots = new ArrayList<>();
 
-        int[] peaks = new int[3];
         int[] cyclical = new int[3];
 
         int distBetweenPeaks = 2;
         // Traverse all the values until 3 peaks which fulfill the criteria are
         // found using a cyclical array.
-        for (int i = 0; i < fftSmooth.length || numPeaks < 3; i++) {
+        for (int i = 0; i < fftSmooth.length && numPeaks < 3; i++) {
             int temp = cyclical[1];
             cyclical[1] = cyclical[2];
             cyclical[0] = temp;
             cyclical[2] = i;
-            if (cyclical[1] > cyclical[0] && cyclical[1] < cyclical[2]);
-            if (fftSmooth[cyclical[1]] > fftSmooth[cyclical[0]] + 0.1 && fftSmooth[cyclical[1]] > fftSmooth[cyclical[2]] + 0.1
-                    && distBetweenPeaks > min_dist) {
-                roots.add(cyclical[1]);
-                numPeaks++;
-                distBetweenPeaks = 0;
-            } else {
-                distBetweenPeaks++;
+            if (cyclical[1] > cyclical[0] && cyclical[1] < cyclical[2]) {
+                if ((fftSmooth[cyclical[1]] > fftSmooth[cyclical[0]] + 0.35) && (fftSmooth[cyclical[1]] > fftSmooth[cyclical[2]] + 0.35)
+                        && (distBetweenPeaks > min_dist) && fftSmooth[cyclical[1]] > 1.5 ) {
+                    roots.add(cyclical[1]);
+                    numPeaks++;
+                    distBetweenPeaks = 0;
+                } else {
+                    distBetweenPeaks++;
+                }
             }
         }
 
-        peaks[0] = roots.get(0);
-        peaks[1] = roots.get(1);
-        peaks[2] = roots.get(2);
+        // Maps from Integer array list to int[]
+        // Found: https://stackoverflow.com/a/23945015
+        int[] peaks = roots.stream().mapToInt(i->i).toArray();
 
         if (roots.size() == 0)
             return new int[1];

@@ -20,8 +20,8 @@ public class Main {
         String compressionsFile = null;
 
         try {
-            stationaryFile = readFile("src/offsetData.txt");
-            compressionsFile = readFile("src/data.txt");
+            stationaryFile = readFile("offsetData.txt");
+            compressionsFile = readFile("data.txt");
         }
         catch (IOException e) {
             System.out.println(e);

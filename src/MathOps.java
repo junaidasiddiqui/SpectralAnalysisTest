@@ -95,15 +95,26 @@ public class MathOps {
         return freqBins[indexes[0]];
     }
 
+    // Credits to: https://stackoverflow.com/a/718558
+    public static int[] convertIntegers(ArrayList<Integer> integers)
+    {
+        int[] ret = new int[integers.size()];
+        for (int i=0; i < ret.length; i++)
+        {
+            ret[i] = integers.get(i).intValue();
+        }
+        return ret;
+    }
+
     public static int[] peakDetection(double[] fftSmooth) {
 
         int min_dist = 5;
         int numPeaks = 0;
 
-//        double max_val = MathOps.getMaxValue(fftSmooth);
-//        double min_val = MathOps.getMinValue(fftSmooth);
-//
-//        double threshold = 2 * (max_val - min_val) + min_val;
+        double max_val = MathOps.getMaxValue(fftSmooth);
+        double min_val = MathOps.getMinValue(fftSmooth);
+
+        double threshold = 2 * (max_val - min_val) + min_val;
 
         ArrayList<Integer> roots = new ArrayList<>();
 
@@ -119,7 +130,7 @@ public class MathOps {
             cyclical[2] = i;
             if (cyclical[1] > cyclical[0] && cyclical[1] < cyclical[2]) {
                 if ((fftSmooth[cyclical[1]] > fftSmooth[cyclical[0]] + 0.35) && (fftSmooth[cyclical[1]] > fftSmooth[cyclical[2]] + 0.35)
-                        && (distBetweenPeaks > min_dist) && fftSmooth[cyclical[1]] > 1.5 ) {
+                        && (distBetweenPeaks > min_dist) && fftSmooth[cyclical[1]] > max_val/4.2 ) {
                     roots.add(cyclical[1]);
                     numPeaks++;
                     distBetweenPeaks = 0;
@@ -131,7 +142,8 @@ public class MathOps {
 
         // Maps from Integer array list to int[]
         // Found: https://stackoverflow.com/a/23945015
-        int[] peaks = roots.stream().mapToInt(i->i).toArray();
+//        int[] peaks = roots.stream().mapToInt(i->i).toArray();
+        int [] peaks = convertIntegers(roots);
 
         if (roots.size() == 0)
             return new int[1];
